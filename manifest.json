@@ -14,15 +14,15 @@
         "default_title": "Chrome Addon v3 Starter",
         "default_popup": "popup/popup.html"
     },
-    "permissions": [],
+    "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
     "host_permissions": [
-        "*://*/*"
+        "https://chat.openai.com/*"
     ],
     "background": {
         "service_worker": "service-worker.js"
     },
     "content_scripts": [{
         "js": ["foreground.js"],
-        "matches": ["https://github.com/*"]
+        "matches": ["https://chat.openai.com/*"]
     }]
 }
