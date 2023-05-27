@@ -99,3 +99,4 @@ Note that in this console, you have access to anything your service worker has a
 - [Migrating from v2 to v3](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/) + [very useful checklist once you think you are done](https://developer.chrome.com/docs/extensions/mv3/mv3-migration-checklist/)
 - [Excellent write-ups of a migration](https://github.com/kentbrew/learning-manifest-v3)
 - [Another example of a v3 extension (older code)](https://gist.github.com/dotproto/3a328d6b187621b445499ba503599dc0)
+"# chatGPT_Medium" 
