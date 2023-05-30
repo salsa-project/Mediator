@@ -23,6 +23,7 @@
     },
     "content_scripts": [{
         "js": ["foreground.js"],
-        "matches": ["https://chat.openai.com/*"]
+        "matches": ["https://chat.openai.com/*"],
+        "run_at": "document_end"
     }]
 }
