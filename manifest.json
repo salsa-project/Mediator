@@ -1,9 +1,9 @@
 {
     // Comments are accepted in the manifest, even though it is JSON.
     "manifest_version": 3,
-    "name": "Chrome Extension v3 Starter",
-    "description": "A minimal example of a chrome extension using manifest v3",
-    "version": "0.0.1",
+    "name": "Chat Mediator Extension",
+    "description": "EXtension that act as center hub of communications",
+    "version": "0.4",
     "icons": {
         "16": "logo/logo-16.png",
         "48": "logo/logo-48.png",
@@ -11,19 +11,31 @@
     },
     "options_page": "settings/settings.html",
     "action": {
-        "default_title": "Chrome Addon v3 Starter",
+        "default_title": "Chat Mediator",
         "default_popup": "popup/popup.html"
     },
-    "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
+    "permissions": [
+        "storage", 
+        "declarativeContent", 
+        "activeTab", 
+        "scripting", 
+        "tabs"
+    ],
     "host_permissions": [
-        "https://chat.openai.com/*"
+        "https://chat.openai.com/*",
+        "https://bard.google.com/*"
     ],
     "background": {
         "service_worker": "service-worker.js"
     },
-    "content_scripts": [{
-        "js": ["foreground.js"],
-        "matches": ["https://chat.openai.com/*"],
-        "run_at": "document_end"
-    }]
+    "content_scripts": [
+        {
+          "matches": ["https://chat.openai.com/*"],
+          "js": ["foreground_chatgpt.js"]
+        },
+        {
+          "matches": ["https://bard.google.com/*"],
+          "js": ["foreground_bard.js"]
+        }
+  ]
 }
