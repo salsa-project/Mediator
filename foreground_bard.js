@@ -1,28 +1,59 @@
-console.log("This prints to the console of Bard")
-
 /***********************************
 
         CHAT BODY CONTAINER
               DETECTOR
 
 ***********************************/
-// Create a new MutationObserver instance
-const observer = new MutationObserver((mutationsList, observer) => {
-  // Chat body container XPath
-  const chatBodyXPath = '/html/body/chat-app/side-navigation/mat-sidenav-container/mat-sidenav-content/main/chat-window/div[1]/div[1]/div';
-  const chatBody = document.evaluate(chatBodyXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  
-  if (chatBody) {
-    // Disconnect the observer once the element is rendered
-    observer.disconnect();
-    // Call the callback function when the chat body is rendered
-    console.log(chatBody)
-    callback(chatBody);
-  }
-});
+let chatBody = null;
+let markdownsCounter = null;
+let messagesLastCount = 0;
 
-// Start observing mutations on the document body
-observer.observe(document.body, { childList: true, subtree: true });
+function startChatBodyObserver() {
+  const chatBodyObserver = new MutationObserver((mutationsList, observer) => {
+    chatBody = document.querySelector(".chat-history.ng-tns-c586583937-1.ng-star-inserted");
+    if (chatBody) {
+      observer.disconnect();
+      recursiveUntilCount();
+    }
+  });
+  
+  chatBodyObserver.observe(document.body, { childList: true, subtree: true });
+}
+function recursiveUntilCount() {
+  const intervalId = setInterval(() => {
+    markdownsCounter= chatBody?.getElementsByClassName('markdown')?.length;
+    // Check the condition
+    if (markdownsCounter >= 0) {
+      // Set messages counter initial state
+      messagesLastCount = markdownsCounter;
+      // Clear the interval to stop further executions
+      clearInterval(intervalId);
+    }
+  }, 500); // Adjust the interval time as needed
+}
+startChatBodyObserver();
+
+/***********************************
+
+        New Message Detector
+
+***********************************/
+const checkForNewMessages = () => {
+  markdownsCounter= chatBody?.getElementsByClassName('markdown')?.length;
+  // Check if chat body is rendered or if there are new messages
+  if (!chatBody) return;
+  if(!markdownsCounter || !messagesLastCount) return;
+  if (markdownsCounter === messagesLastCount) return;
+  // Retrieve the last message
+  const lastMessage = getLastMessage(chatBody);
+  // Send the last message to the background script
+  sendMessage("bardLastMessage", lastMessage);
+  // Update messagesLastCount
+  messagesLastCount = markdownsCounter;
+};
+
+// Call the checkForNewMessages function periodically
+setInterval(checkForNewMessages, 500);
 
 /***********************************
 
@@ -31,48 +62,44 @@ observer.observe(document.body, { childList: true, subtree: true });
 ***********************************/
 // Function to retrieve the last message
 function getLastMessage(chatBody) {
-  const chatBodyMarkdowns = chatBody.getElementsByClassName('markdown');
-  const lastMessage = /*chatBodyMarkdowns[chatBodyMarkdowns.length-1].textContent ||*/ "Bard Chat: No Conversation Yet..";
-  
+  const chatBodyMarkdowns = chatBody?.getElementsByClassName('markdown');
+  const lastMessage = chatBodyMarkdowns[chatBodyMarkdowns.length - 1]?.textContent || "Bard Chat : Standard Message..";
   return lastMessage;
 }
 
 /***********************************
 
-              CALLBACK
+            SEND MESSAGE
 
 ***********************************/
-// Callback function to perform actions after the chat body is found
-function callback(chatBody) {
-  const result = getLastMessage(chatBody);
-  console.log(result);
-  
-  // Send the last message to the background script
+function sendMessage(action, message){
   chrome.runtime.sendMessage({
-    action: "bardLastMessage",
+    action: action,
     payload: {
-      lastMessage: result
-    }
+      lastMessage: message,
+    },
   });
 }
 
 /***********************************
 
-       RECEIVE MESSAGE FUNCTION              
+        RECEIVE MESSAGE
 
 ***********************************/
-// Function to handle receiving messages from ChatGPT
+// Function to handle receiving messages from the background script
 function receiveMessage(message) {
   const receivedMessage = message.payload.message;
-  console.log("Received message from ChatGPT:", receivedMessage);
+  console.log(receivedMessage)
 }
 
+/***********************************
+
+      Handle Received Messages
+
+***********************************/
 // Add a listener for messages from the background script
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.action === "receiveMessage") {
     receiveMessage(message);
-  }else if(message.action === "testMsg") {
-    receiveMessage(message);
   }
 });
-

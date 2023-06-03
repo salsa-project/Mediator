@@ -3,7 +3,7 @@
     "manifest_version": 3,
     "name": "Chat Mediator Extension",
     "description": "EXtension that act as center hub of communications",
-    "version": "0.4",
+    "version": "0.7",
     "icons": {
         "16": "logo/logo-16.png",
         "48": "logo/logo-48.png",
