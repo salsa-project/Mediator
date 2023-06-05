@@ -28,6 +28,7 @@ function sendMessageToTab(tabId, message) {
 ***********************************/
 // Function to handle incoming messages from content scripts
 function handleIncomingMessage(message, sender, sendResponse) {
+  console.log(message)
   // Process the incoming message based on its content
   switch (message.action) {
     case "chatGPTLastMessage":

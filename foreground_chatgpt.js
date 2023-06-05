@@ -47,9 +47,8 @@ const checkForNewMessages = () => {
   markdownsCounter= chatBody?.getElementsByClassName('markdown')?.length;
   // Check if chat body is rendered or if there are new messages
   if(!chatBody) return;
-  if(!markdownsCounter || !messagesLastCount) return;
+  if(markdownsCounter == null || messagesLastCount == null) return;
   if(markdownsCounter === messagesLastCount) return;
-  console.log(markdownsCounter, messagesLastCount)
   const chatBodyBtnsContainer = document.querySelector(".h-full.flex.ml-1.md\\:w-full.md\\:m-auto.md\\:mb-2.gap-0.md\\:gap-2.justify-center");
   if(!(chatBodyBtnsContainer?.childNodes?.length)) return;
 
