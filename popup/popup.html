@@ -3,33 +3,41 @@
   <head>
     <title>ChatGPT Extension</title>
     <link rel="stylesheet" type="text/css" href="popup.css">
-    <script src="popup.js"></script>
+    
   </head>
   <body>
     <h1>Settings</h1>
-    <h2>Connect (Bot VS Bot)</h2>
-    <div class="select-container">
-      <select id="select1">
-        <option value="" disabled selected>Choose...</option>
-        <option value="chatgpt">ChatGPT</option>
-        <option value="bard">Bard</option>
-      </select>
-      <select id="select2">
-        <option value="" disabled selected>Choose...</option>
-        <option value="chatgpt">ChatGPT</option>
-        <option value="bard">Bard</option>
-      </select>
+  
+    <div id="connectSection">
+      <h2>Connect (Bot VS Bot)</h2>
+      <div class="select-container">
+        <select id="select1" class="">
+          <option value="" disabled selected>Choose...</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="bard">Bard</option>
+        </select>
+        <select id="select2" class="">
+          <option value="" disabled selected>Choose...</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="bard">Bard</option>
+        </select>
+      </div>
+      <button id="checkServicesBtn">Check Services</button>
     </div>
 
-    <button>Check Services</button>
-    <p id="checkText">Tabs Are Ready..</p>
-    <h2>Setup Bots</h2>
-    <p>You clarify the following:</p>
-    <ul>
-      <li>conversation rules (default)</li>
-      <li>the Topic</li>
-      <li></li>
-    </ul>
-    
+    <div>
+      <h2>Setup Bots</h2>
+      <p>You clarify the following:</p>
+      <ul>
+        <li>conversation rules (default)</li>
+        <li>the Topic</li>
+        <li></li>
+      </ul>
+    </div>
+
+
+
+
+    <script src="popup.js"></script>
   </body>
 </html>

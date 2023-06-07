@@ -1,30 +1,73 @@
+*{
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: monospace;
+}
 body {
-    width: 800px;
+    width: 600px;
 }
 
 h1{
-    color: lightgray;
+    color: lightgrey;
+    margin: 5px;
+    text-align: center;
+    font-size: 4rem;
+}
+h2{
+    color: dimgray;
+    text-align: center;
+    font-size: 16pt;
+}
+#connectSection{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0px;
 }
 .select-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  
 }
-
+.select-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    padding: 20px 0px;
+}
 select {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 150px;
+    position: relative;
+    width: 45%;
+    padding: 10px 10px;
+    color: slategray;
+    border: 1px dashed;
+    border-radius: 3px;
+    font-size: 18px;
+    text-align: center;
 }
-
-
-
-
-
-#checkText{
-    padding: 5px;
-    color: Green;
-    font-size: 14pt;
+.ready{
+    color: white;
+    background: lightgreen;
+    font-weight: bolder;
+    border-color: white;
+}
+.notReady{
+    color: white;
+    background: lightpink;
+    font-weight: bolder;
+    border-color: white;
+}
+#checkServicesBtn{
+    width: 60%;
+    padding: 10px;
+    color: skyblue;
+    background: white;
+    border: 1px dashed skyblue;
+    border-radius: 3px;
+    font-size: 18px;
+    font-weight: bolder;
+}
+#checkServicesBtn:active{
+    color: white;
+    background: skyblue;
 }
