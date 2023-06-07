@@ -82,3 +82,8 @@ chrome.runtime.onMessage.addListener(handleIncomingMessage);
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(handleTabUpdate);
 
+//TODO: on after the conversation start and off when its done and error if something is wrong
+chrome.action.setBadgeText({text: 'ON'});
+chrome.action.setBadgeBackgroundColor({color: '#4688F1'});
+
+

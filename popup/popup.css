@@ -1,11 +1,30 @@
 body {
-    background-color: #222;
-    color: #eee;
-
-    width: 16rem;
-    height: 4rem;
+    width: 800px;
 }
 
-.special-text {
-    color: red;
+h1{
+    color: lightgray;
+}
+.select-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+select {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 150px;
+}
+
+
+
+
+
+#checkText{
+    padding: 5px;
+    color: Green;
+    font-size: 14pt;
 }

@@ -5,9 +5,7 @@
     "description": "EXtension that act as center hub of communications",
     "version": "0.7",
     "icons": {
-        "16": "logo/logo-16.png",
-        "48": "logo/logo-48.png",
-        "128": "logo/logo-128.png"
+        "128": "logo/logo128.png"
     },
     "options_page": "settings/settings.html",
     "action": {

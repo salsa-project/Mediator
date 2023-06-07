@@ -1,88 +1,69 @@
-/***********************************
+// =======================
+//          SETUP
+// =======================
 
-                SETUP
-
-***********************************/
-const bardStandardMsg = 'Bard Chat : Standard Message..';
+// Variables initialization
 let chatBody = null;
-let presentedResponseContainer = null;
-let markdownsCounter = new ValueWatcher(0);
-//TO REMOVE
-let messagesLastCount = 0;
+let textAreaPromptField = null;
+let sendPromptBtn = null;
+let lastMessage = new ValueWatcher('');
 
-markdownsCounter.onAfterSet = function(){
-  console.log('New Message Detected..')
+// Callback function executed after setting the lastMessage value
+lastMessage.onAfterSet = function(newVal){
+  console.log(newVal)
 }
 
-/***********************************
+// =======================
+//       CHAT BODY
+//   CONTAINER DETECTOR
+// =======================
 
-        CHAT BODY CONTAINER
-              DETECTOR
-
-***********************************/
-function startChatBodyObserver() {
-  const chatBodyObserver = new MutationObserver((mutationsList, observer) => {
-    chatBody = document.querySelector(".chat-history.ng-tns-c586583937-1.ng-star-inserted");
-    if (isElementValid(chatBody).html().check) {
+// Function to observe changes in the body and detect the chat body container
+function bodyObserver(){
+  const observer = new MutationObserver((mutationsList, observer) => {
+    chatBody = document.querySelector('[data-test-id="chat-history-container"]');
+    // Check if the chat body container is found and valid
+    if(isElementValid(chatBody).html().check) {
       observer.disconnect();
-      recursiveUntilCount();
+      chatObserver(); // Call the chatObserver function
     }
   });
-  chatBodyObserver.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
-function recursiveUntilCount() {
-    markdownsCounter.setValue(chatBody.getElementsByClassName('markdown').length);
-    // Set messages counter initial state
-    //TO REMOVE
-    messagesLastCount = markdownsCounter; 
-}
-startChatBodyObserver();
+bodyObserver();
 
-/***********************************
+// =======================
+//   New Message Detector
+// =======================
 
-        New Message Detector
+// Function to observe changes in the chat body container and detect new messages
+function chatObserver(){
+  const observer = new MutationObserver((mutationsList, observer) => {
+    mutationsList.forEach((mutation) => {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        const newChild = mutation.addedNodes[0];
+        // Check if the newChild is a valid response with content
+        if(newChild.childNodes.length != 3) return;
+        setTimeout(()=>{
+          // Assign the textarea and send button elements
+          textAreaPromptField = document.getElementsByTagName('textarea')[0];
+          sendPromptBtn = document.getElementsByClassName("send-button-container")[0].getElementsByTagName('button')[0];
+          // Get the last response markdown
+          chatResponse = newChild.querySelector('.presented-response-container').getElementsByClassName('markdown');
+          lastMessage.setValue(chatResponse[chatResponse.length-1].textContent)
+        },200)
 
-***********************************/
-const checkForNewMessages = () => {
-  presentedResponseContainer = document.getElementsByClassName('presented-response-container');
-  if(!presentedResponseContainer) return;
-  markdownsCounter.setValue(presentedResponseContainer?.length);
-  console.log(markdownsCounter.getValue())
-  // Check if chat body is rendered or if there are new messages
-  if (!chatBody) return;
-  if(markdownsCounter == null || messagesLastCount == null) return;
-  if (markdownsCounter === messagesLastCount) return;
-  
-  // Retrieve the last message
-  const lastMessage = getLastMessage(presentedResponseContainer);
-  console.log(lastMessage)
-  if(lastMessage.includes(bardStandardMsg)) return;
-  // Send the last message to the background script
-  sendMessage("bardLastMessage", lastMessage);
-  // Update messagesLastCount
-  messagesLastCount = markdownsCounter;
-};
-
-// Call the checkForNewMessages function periodically
-setInterval(checkForNewMessages, 500);
-
-/***********************************
-
-        GET LAST MESSAGE
-
-***********************************/
-// Function to retrieve the last message
-function getLastMessage(presentedResponsesContainer) {
-  const chatBodyMarkdowns = presentedResponsesContainer[presentedResponsesContainer.length-1]?.getElementsByClassName('markdown');
-  const lastMessage = chatBodyMarkdowns[0]?.textContent || bardStandardMsg;
-  return lastMessage;
+      }
+    });
+  });
+  observer.observe(chatBody, { childList: true });
 }
 
-/***********************************
+// =======================
+//     SEND MESSAGE
+// =======================
 
-            SEND MESSAGE
-
-***********************************/
+// Function to send a message to the background script
 function sendMessage(action, message){
   chrome.runtime.sendMessage({
     action: action,
@@ -92,22 +73,20 @@ function sendMessage(action, message){
   });
 }
 
-/***********************************
+// =======================
+//       RECEIVE MESSAGE
+// =======================
 
-        RECEIVE MESSAGE
-
-***********************************/
 // Function to handle receiving messages from the background script
 function receiveMessage(message) {
   const receivedMessage = message.payload.message;
   console.log(receivedMessage)
 }
 
-/***********************************
+// =======================
+// Handle Received Messages
+// =======================
 
-      Handle Received Messages
-
-***********************************/
 // Add a listener for messages from the background script
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.action === "receiveMessage") {
@@ -115,54 +94,71 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
 });
 
+// =======================
+//      SEND PROMPT
+// =======================
 
-/***********************************
+// Function to send a prompt to the chat input field
+function sendPrompt(content){
+  emulatePaste(textAreaPromptField, content)
+  sendPromptBtn.click();
+}
 
-         is Element Valid
+// Function to emulate a paste operation into a textarea
+function emulatePaste(textarea, content) {
+  // Set the selection range at the end of the textarea's content
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  // Insert the content at the current cursor position
+  document.execCommand('insertText', false, content);
+}
 
-***********************************/
+// =======================
+//    is Element Valid
+// =======================
+
+// Function to check the validity and nature of an element
 function isElementValid(element, expectedNature, checkArrayElements = false) {
   const validator = {
     check: false,
-    log: '',
+    message: '',
     array() {
       this.check = Array.isArray(element);
-      this.log = console.log('Element is an array');
+      this.message = 'Element is an array';
       return this;
     },
     undefined() {
       this.check = typeof element === 'undefined';
-      this.log = console.log('Element is undefined');
+      this.message = 'Element is undefined';
       return this;
     },
     null() {
       this.check = element === null;
-      this.log = console.log('Element is null');
+      this.message = 'Element is null';
       return this;
     },
     string() {
       this.check = typeof element === 'string';
-      this.log = console.log('Element is a string');
+      this.message ='Element is a string';
       return this;
     },
     number() {
       this.check = typeof element === 'number';
-      this.log = console.log('Element is a number');
+      this.message = 'Element is a number';
       return this;
     },
     object() {
       this.check = typeof element === 'object' && element !== null;
-      this.log = console.log('Element is an object');
+      this.message = 'Element is an object';
       return this;
     },
     boolean() {
       this.check = typeof element === 'boolean';
-      this.log = console.log('Element is a boolean');
+      this.message = 'Element is a boolean';
       return this;
     },
     html() {
       this.check = element instanceof HTMLElement;
-      this.log = console.log('HTML element');
+      this.message = 'HTML element';
       return this;
     },
   };
@@ -171,12 +167,12 @@ function isElementValid(element, expectedNature, checkArrayElements = false) {
     for (const item of element) {
       if (item === undefined || item === null) {
         validator.check = true;
-        validator.log = console.log('Element contains undefined or null values');
+        validator.message = 'Element contains undefined or null values';
         return validator;
       }
     }
     validator.check = false;
-    validator.log = console.log('All elements are defined and non-null');
+    validator.message = 'All elements are defined and non-null';
     return validator;
   }
 
@@ -184,27 +180,23 @@ function isElementValid(element, expectedNature, checkArrayElements = false) {
     return validator[expectedNature]();
   }
 
-  validator.log = console.log('Unexpected nature');
+  validator.message = 'Unexpected nature';
   return validator;
 }
 
-/***********************************
+// =======================
+//     Value Watcher
+// =======================
 
-          Value Watcher
-
-***********************************/
+// Constructor function for watching changes in a value
 function ValueWatcher(value) {
   this.onBeforeSet = function() {};
   this.onAfterSet = function() {};
 
   this.setValue = function(newVal) {
-    if (value !== newVal) {
       this.onBeforeSet(value, newVal);
       value = newVal;
       this.onAfterSet(newVal);
-    } else {
-      console.log('Old value is equal to new value. No need to set.');
-    }
   };
 
   this.getValue = function() {
