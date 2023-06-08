@@ -9,10 +9,9 @@ body {
 }
 
 h1{
-    color: lightgrey;
-    margin: 5px;
+    color: rgb(225,225,225);
     text-align: center;
-    font-size: 4rem;
+    font-size: 3.5rem;
 }
 h2{
     color: dimgray;
@@ -23,7 +22,10 @@ h2{
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0px;
+    height: 0px;
+    padding: 10px 0px;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
 }
 .select-container {
   
@@ -60,27 +62,41 @@ select {
 #checkServicesBtn, #startConversationBtn{
     width: 60%;
     padding: 10px;
-    color: skyblue;
-    background: white;
-    border: 1px dashed skyblue;
+    color: white;
+    background: skyblue;
+    border: 1px dashed white;
     border-radius: 3px;
     font-size: 18px;
     font-weight: bolder;
     cursor: pointer;
 }
 #checkServicesBtn:hover, #startConversationBtn:hover{
-    color: white;
-    background: skyblue;
+    color: skyblue;
+    background: white;
+    border-color: skyblue;
 }
 #checkServicesBtn:active, #startConversationBtn:active{
     filter: invert(10%);
 }
 
+
+
+
+/*=====================
+        setupBots
+======================*/
 #setupBots{
     display: flex;
     flex-direction: column;
     align-items: center;
+    height: 0px;
     padding: 10px 0px;
+    transform: scaleY(0);
+}
+.show{
+    height: auto !important;
+    transition: transform 0.3s ease;
+    transform: scaleY(1) !important;
 }
 #setupBots label{
     padding: 5px;

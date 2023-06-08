@@ -8,6 +8,9 @@ const botOneRules = document.getElementById('botOneRules');
 const botTwoRules = document.getElementById('botTwoRules');
 const startConversationBtn = document.getElementById('startConversationBtn');
 
+const connectSection = document.getElementById('connectSection');
+const setupBotsSection = document.getElementById('setupBots');
+
 checkServicesBtn.addEventListener('click', function(){
   if(select1.value == "none" || select2.value == "none") return;
   let chatbotOne = select1.value;
@@ -29,6 +32,14 @@ checkServicesBtn.addEventListener('click', function(){
   this.disabled = true;
   select1.disabled = true;
   select2.disabled = true;
+  setTimeout(()=>{
+    // hide connect section
+    connectSection.classList.toggle('show')
+  }, 200)
+  setTimeout(()=>{
+    // show setup bots section
+    setupBotsSection.classList.toggle('show')
+  }, 500)
 })
 
 

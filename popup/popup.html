@@ -7,8 +7,8 @@
   </head>
   <body>
     <h1>Settings</h1>
-  
-    <div id="connectSection">
+
+    <div id="connectSection" class="show">
       <h2>Connect (Bot VS Bot)</h2>
       <div class="select-container">
         <select id="select1" class="">
@@ -25,6 +25,9 @@
       <button id="checkServicesBtn">Check Services</button>
     </div>
 
+    <!-- -->
+    <!-- -->
+
     <div id="setupBots">
       <h2>Setup Bots</h2>
 
@@ -33,7 +36,7 @@
 
       <label for="commonRules">Set Conversation Common Rules (For Both chatBots):</label>
       <textarea id="commonRules" rows="4" placeholder="Enter conversation rules.."></textarea>
-      
+
 
       <label for="botOneRules">Set Conversation Rules (For Bot1 only):</label>
       <textarea id="botOneRules" rows="4" placeholder="Enter conversation rules.."></textarea>
@@ -45,12 +48,8 @@
       <button id="startConversationBtn">Start</button>
     </div>
 
-    <div>
-      
-    </div>
-    
 
 
-    <script src="popup.js"></script>
+  <script src="popup.js"></script>
   </body>
 </html>
