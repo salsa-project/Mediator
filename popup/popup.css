@@ -57,7 +57,7 @@ select {
     font-weight: bolder;
     border-color: white;
 }
-#checkServicesBtn{
+#checkServicesBtn, #startConversationBtn{
     width: 60%;
     padding: 10px;
     color: skyblue;
@@ -66,8 +66,31 @@ select {
     border-radius: 3px;
     font-size: 18px;
     font-weight: bolder;
+    cursor: pointer;
 }
-#checkServicesBtn:active{
+#checkServicesBtn:hover, #startConversationBtn:hover{
     color: white;
     background: skyblue;
+}
+#checkServicesBtn:active, #startConversationBtn:active{
+    filter: invert(10%);
+}
+
+#setupBots{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0px;
+}
+#setupBots label{
+    padding: 5px;
+    font-size: 10pt;
+    font-weight: 900;
+}
+#setupBots textarea, #setupBots input{
+    width: 80%;
+    padding: 15px;
+    margin-bottom: 5px;
+    border: 1px dashed gray;
+    font-size: 10pt;
 }

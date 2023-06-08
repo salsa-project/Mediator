@@ -12,12 +12,12 @@
       <h2>Connect (Bot VS Bot)</h2>
       <div class="select-container">
         <select id="select1" class="">
-          <option value="" disabled selected>Choose...</option>
+          <option value="none" disabled selected>Choose...</option>
           <option value="chatgpt">ChatGPT</option>
           <option value="bard">Bard</option>
         </select>
         <select id="select2" class="">
-          <option value="" disabled selected>Choose...</option>
+          <option value="none" disabled selected>Choose...</option>
           <option value="chatgpt">ChatGPT</option>
           <option value="bard">Bard</option>
         </select>
@@ -25,17 +25,30 @@
       <button id="checkServicesBtn">Check Services</button>
     </div>
 
-    <div>
+    <div id="setupBots">
       <h2>Setup Bots</h2>
-      <p>You clarify the following:</p>
-      <ul>
-        <li>conversation rules (default)</li>
-        <li>the Topic</li>
-        <li></li>
-      </ul>
+
+      <label for="topic">Set Conversation Topic:</label>
+      <input type="text" id="topic" placeholder="Enter topic...">
+
+      <label for="commonRules">Set Conversation Common Rules (For Both chatBots):</label>
+      <textarea id="commonRules" rows="4" placeholder="Enter conversation rules.."></textarea>
+      
+
+      <label for="botOneRules">Set Conversation Rules (For Bot1 only):</label>
+      <textarea id="botOneRules" rows="4" placeholder="Enter conversation rules.."></textarea>
+
+
+      <label for="botTwoRules">Set Conversation Rules (For Bot2 Only):</label>
+      <textarea id="botTwoRules" rows="4" placeholder="Enter conversation rules.."></textarea>
+
+      <button id="startConversationBtn">Start</button>
     </div>
 
-
+    <div>
+      
+    </div>
+    
 
 
     <script src="popup.js"></script>
