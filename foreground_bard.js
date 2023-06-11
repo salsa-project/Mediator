@@ -6,13 +6,30 @@
 let chatBody = null;
 let textAreaPromptField = null;
 let sendPromptBtn = null;
+
+let isConversationOn = new ValueWatcher(false);
 let lastMessage = new ValueWatcher('');
 
-// Callback function executed after setting the lastMessage value
-lastMessage.onAfterSet = function(newVal){
-  console.log(newVal)
+isConversationOn.onAfterSet= function(newVal){
+  if(newVal){
+    chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "bard", isReady: true}});
+  }else{
+    chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "bard", isReady: false}});
+  }
 }
 
+// Define a callback function to be executed after the value of `lastMessage` is set
+lastMessage.onAfterSet = function(newVal){
+  // check conversation on/off
+  isReadyForConversation(newVal)
+
+  if(isConversationOn) {
+    console.log(newVal)
+    // forward message to chatgpt
+    //sendMessage("toChatGPT", newVal);
+  }
+  
+}
 // =======================
 //       CHAT BODY
 //   CONTAINER DETECTOR
@@ -73,26 +90,66 @@ function sendMessage(action, message){
   });
 }
 
-// =======================
-//       RECEIVE MESSAGE
-// =======================
 
+// =======================
+//    Received Messages
+// =======================
+// Add a listener for messages from the background script
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  console.log(message)
+  switch (message.action) {
+    case "setup":
+      setupConversationHandler(message)
+    break;
+
+    case "fromChatGPT":
+      sendPrompt(message.payload.message);
+      console.log(message.payload.message);
+    break;
+
+    case "startFirst":
+      sendPrompt(message.payload);
+      console.log(message.payload);
+      break;
+
+    default: console.log("Something Went Wrong...........")
+  }
+});
+
+// =======================
+// RECEIVE MESSAGE HANDLERS
+// =======================
 // Function to handle receiving messages from the background script
-function receiveMessage(message) {
+function setupConversationHandler(message) {
   const receivedMessage = message.payload.message;
-  console.log(receivedMessage)
+  // get bard rules only
+  const rules = receivedMessage.setup.find((item) => item.name === "bard").rules;
+  // extract data
+  const topic = "Topic: " + receivedMessage.topic + "\n\n" || "Topic: Any Random Topic in ai and Web developement Field \n\n";
+  const commonRules = rules[0];
+  const roleRules = rules[1];
+  console.log(`${topic} \n ${commonRules} \n ${roleRules}`)
+  // prompt it
+  sendPrompt(`${topic} \n ${commonRules} \n ${roleRules}`)
 }
 
 // =======================
-// Handle Received Messages
+// isReady sign check (🔥)
 // =======================
+function isReadyForConversation(message){
+  // Define the regex pattern to check
+  const startSentance = "Let’s Quick Of This 🔥";
+  const endSentance = "It was very nice to talk to you 🔥";
 
-// Add a listener for messages from the background script
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.action === "receiveMessage") {
-    receiveMessage(message);
+  if (message.includes(startSentance)) {
+    isConversationOn.setValue(true);
+    console.log("The target sentence is found in the last message", isConversationOn);
   }
-});
+  if (message.includes(endSentance)) {
+    isConversationOn.setValue(false);
+    console.log("The target sentence is found in the last message", isConversationOn);
+  }
+}
 
 // =======================
 //      SEND PROMPT
@@ -101,11 +158,14 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 // Function to send a prompt to the chat input field
 function sendPrompt(content){
   emulatePaste(textAreaPromptField, content)
+  console.log(textAreaPromptField)
   sendPromptBtn.click();
 }
 
 // Function to emulate a paste operation into a textarea
 function emulatePaste(textarea, content) {
+  // FIX textarea
+  console.log(textarea)
   // Set the selection range at the end of the textarea's content
   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   // Insert the content at the current cursor position
@@ -202,4 +262,19 @@ function ValueWatcher(value) {
   this.getValue = function() {
     return value;
   };
+}
+
+// =======================
+//     count Words
+// =======================
+// for bard max length is: 800~1000 words || 4000 character
+function countWords(text) {
+  // Remove leading and trailing whitespaces
+  text = text.trim();
+
+  // Split the string into words using whitespace as the delimiter
+  const words = text.split(/\s+/);
+
+  // Return the number of words
+  return words.length;
 }

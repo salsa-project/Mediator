@@ -1,11 +1,141 @@
 // Background script
 
 // Constants for tab URLs
-const CHATGPT_TAB_URL = "https://chat.openai.com/";
-const BARD_TAB_URL = "https://bard.google.com/";
-// Variables to store the tab IDs
-let chatGPTTabId = null;
-let bardTabId = null;
+const urlPatterns = {
+  chatgpt: "https://chat.openai.com/",
+  bard: "https://bard.google.com/"
+}
+
+// store the tab IDs
+let tabID = {
+  chatgpt: null,
+  bard: null
+}
+// ready for conversation (this is used to determine who start first)
+let isReady = {
+  chatgpt : false,
+  bard: false
+}
+
+
+/***********************************
+
+          Incoming Message
+
+***********************************/
+// Function to handle incoming messages from content scripts
+function handleIncomingMessage(message, sender, sendResponse) {
+  // Process the incoming message based on its content
+  switch (message.action) {
+    // from popup.js
+    case "checkTabs":
+      checkTabs(message.services)
+        .then((tabStatus) => {
+          sendResponse({ tabStatus });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          // Handle the error and send an appropriate response
+          sendResponse({ error: "An error occurred while checking tabs" });
+        });
+      // Returning true indicates that sendResponse will be called asynchronously
+      return true;
+      break;
+
+    // from popup.js
+    case "conversationSetup":
+      let msgSetup = message.convesationSetup;
+      let msgExtra = message.convesationSetup.extraRules;
+      let setup = {
+        topic: msgSetup.topic, 
+        setup:[ 
+          {name: msgExtra[0].botName, rules: [msgSetup.commonRules, msgExtra[0].rules]},
+          {name: msgExtra[1].botName, rules: [msgSetup.commonRules, msgExtra[1].rules]}
+        ]
+      };
+      let fullMsg = {
+        action: "setup",
+        payload: {
+          message: setup
+        }
+      };
+      //TODO: change it to dynamic
+      sendMessageToTab( tabID.chatgpt, fullMsg)
+      sendMessageToTab( tabID.bard, fullMsg)
+      break;
+
+    case "readyForConversation":
+      isReady[message.payload.name] = message.payload.isReady;
+      // if both ready then start the conversation
+      if(isReady.chatgpt && isReady.bard){
+        // randomly choose one of them to start first
+        let toss = tossCoin();
+        let startFirst = toss === 1 ? "chatgpt" : "bard";
+        console.log(startFirst)
+        sendMessageToTab(tabID[startFirst], {
+          action: "startFirst",
+          payload: "you start first 🔥"
+        })
+      }
+      break;
+    // from foreground_chatgpt.js
+    case "toBard":
+      // Send the message to the Bard tab
+      sendMessageToTab(tabID.bard, {
+        action: "fromChatGPT",
+        payload: {
+          message: message.payload.lastMessage,
+        },
+      });
+      break;
+
+    // from foreground_bard.js
+    case "toChatGPT":
+      // Send the message to the chatGPT tab
+      sendMessageToTab(tabID.chatgpt, {
+        action: "fromBard",
+        payload: {
+          message: message.payload.lastMessage,
+        },
+      });
+      break;
+
+    default:
+      console.log("Unknown message action:", message.action);
+  }
+}
+/***********************************
+
+          check tabs
+
+***********************************/
+async function checkTabs(services) {
+  const tabsToCheck = services.map((service) => {
+    return {
+      url: urlPatterns[service]+"*",
+      isOpen: false,
+    };
+  });
+  await Promise.all(
+    tabsToCheck.map((tab) => {
+      return new Promise((resolve) => {
+        chrome.tabs.query({ url: tab.url }, (tabs) => {
+          tab.isOpen = tabs && tabs.length > 0;
+          resolve();
+          if(!tab.isOpen) return;
+          // get tab id
+          if (tabs[0].url.includes(urlPatterns.chatgpt)) {
+            tabID.chatgpt = tabs[0].id;
+          }
+          if (tabs[0].url.includes(urlPatterns.bard)) {
+            tabID.bard = tabs[0].id;
+          }
+        });
+      });
+    })
+  );
+  return tabsToCheck;
+}
 
 /***********************************
 
@@ -23,67 +153,23 @@ function sendMessageToTab(tabId, message) {
 }
 /***********************************
 
-          Incoming Message
-
-***********************************/
-// Function to handle incoming messages from content scripts
-function handleIncomingMessage(message, sender, sendResponse) {
-  console.log(message)
-  // Process the incoming message based on its content
-  switch (message.action) {
-    case "chatGPTLastMessage":
-      // Send the message to the Bard tab
-      sendMessageToTab(bardTabId, {
-        action: "receiveMessage",
-        payload: {
-          message: message.payload.lastMessage
-        }
-      });
-      break;
-    case "bardLastMessage":
-      // Send the message to the chatGPT tab
-      sendMessageToTab(chatGPTTabId, {
-        action: "receiveMessage",
-        payload: {
-          message: message.payload.lastMessage
-        }
-      });
-      break;
-    default: console.log("Unknown message action:", message.action);
-  }
-}
-/***********************************
-
-          Tab Update
-
-***********************************/
-// Function to handle tab updates
-function handleTabUpdate(tabId, changeInfo, tab) {
-  if (changeInfo.status === "complete") {
-    // Check if the tab is the ChatGPT tab
-    if (tab.url.startsWith(CHATGPT_TAB_URL)) {
-      chatGPTTabId = tabId;
-    }
-    // Check if the tab is the Bard tab
-    else if (tab.url.startsWith(BARD_TAB_URL)) {
-      bardTabId = tabId;
-    }
-  }
-}
-/***********************************
-
       Handle Received Messages
-      Handle Tab Update
 
 ***********************************/
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener(handleIncomingMessage);
 
-// Listen for tab updates
-chrome.tabs.onUpdated.addListener(handleTabUpdate);
+/***********************************
+
+              Others
+
+***********************************/
 
 //TODO: on after the conversation start and off when its done and error if something is wrong
 chrome.action.setBadgeText({text: 'ON'});
 chrome.action.setBadgeBackgroundColor({color: '#4688F1'});
 
 
+function tossCoin() {
+  return Math.floor(Math.random() * 2) + 1;
+}

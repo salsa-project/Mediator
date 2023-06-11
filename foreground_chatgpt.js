@@ -6,11 +6,29 @@
 let chatBody = null;
 let textAreaPromptField = null;
 let sendPromptBtn = null;
+
+let isConversationOn = new ValueWatcher(false);
 let lastMessage = new ValueWatcher('');
+
+isConversationOn.onAfterSet= function(newVal){
+  if(newVal){
+    chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "chatgpt", isReady: true}});
+  }else{
+    chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "chatgpt", isReady: false}});
+  }
+}
 
 // Define a callback function to be executed after the value of `lastMessage` is set
 lastMessage.onAfterSet = function(newVal){
-  console.log(newVal)
+  // check conversation on/off
+  isReadyForConversation(newVal)
+
+  if(isConversationOn) {
+    console.log(newVal)
+    // forward message to BARD
+    //sendMessage("toBard", newVal);
+  }
+  
 }
 
 // =======================
@@ -32,6 +50,7 @@ function bodyObserver(){
   // Observe changes in the body of the document
   observer.observe(document.body, { childList: true, subtree: true });
 }
+// TODO > wake up body observer only after clicking on the addon/extension (its like: waking up/starting the extension)
 // Call the bodyObserver function to start observing the chat body container
 bodyObserver();
 
@@ -80,25 +99,65 @@ function sendMessage(action, message) {
 }
 
 // =======================
-//       RECEIVE MESSAGE
-// =======================
-
-// Function to handle receiving messages from the background script
-function receiveMessage(message) {
-  const receivedMessage = message.payload.message;
-  console.log(receivedMessage)
-}
-
-// =======================
-// Handle Received Messages
+//    Received Messages
 // =======================
 
 // Add a listener for messages from the background script
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.action === "receiveMessage") {
-    receiveMessage(message);
+  switch (message.action) {
+    case "setup":
+      setupConversationHandler(message)
+      break;
+
+    case "fromBard":
+      sendPrompt(message.payload.message);
+      console.log(message.payload.message);
+      break;
+
+    case "startFirst":
+      sendPrompt(message.payload);
+      console.log(message.payload);
+      break;
+
+    default: console.log("Something Went Wrong...........")
   }
 });
+
+// =======================
+// RECEIVE MESSAGE HANDLERS
+// =======================
+// Function to handle receiving messages from the background script
+function setupConversationHandler(message) {
+  console.log(message)
+  const receivedMessage = message.payload.message;
+  // get chatgpt rules only
+  const rules = receivedMessage.setup.find((item) => item.name === "chatgpt").rules;
+  // extract data
+  const topic = "Topic: " + receivedMessage.topic + "\n\n" || "Topic: Any Random Topic in ai and Web developement Field \n\n";
+  const commonRules = rules[0];
+  const roleRules = rules[1];
+  // prompt it
+  sendPrompt(`${topic} \n ${commonRules} \n ${roleRules}`)
+  console.log(`${topic} \n ${commonRules} \n ${roleRules}`)
+}
+
+// =======================
+// isReady sign check (🔥)
+// =======================
+function isReadyForConversation(message){
+  // Define the regex pattern to check
+  const startSentance = "Let’s Quick Of This 🔥";
+  const endSentance = "It was very nice to talk to you 🔥";
+
+  if (message.includes(startSentance)) {
+    isConversationOn.setValue(true);
+    console.log("The target sentence is found in the last message", isConversationOn);
+  }
+  if (message.includes(endSentance)) {
+    isConversationOn.setValue(false);
+    console.log("The target sentence is found in the last message", isConversationOn);
+  }
+}
 
 // =======================
 //      SEND PROMPT
@@ -114,6 +173,8 @@ function sendPrompt(content){
 // Function to emulate a paste operation into a textarea
 function emulatePaste(textarea, content) {
   // Set the selection range at the end of the textarea's content
+  // FIX textarea
+  console.log(textarea)
   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   // Insert the content at the current cursor position
   document.execCommand('insertText', false, content);
@@ -194,7 +255,6 @@ function isElementValid(element, expectedNature, checkArrayElements = false) {
 // =======================
 //     Value Watcher
 // =======================
-
 // Constructor function to watch for changes in a value
 function ValueWatcher(value) {
   this.onBeforeSet = function() {};
@@ -209,4 +269,19 @@ function ValueWatcher(value) {
   this.getValue = function() {
     return value;
   };
+}
+
+// =======================
+//     count Words
+// =======================
+// for chatgpt3 max length is: 700~800 words
+function countWords(text) {
+  // Remove leading and trailing whitespaces
+  text = text.trim();
+
+  // Split the string into words using whitespace as the delimiter
+  const words = text.split(/\s+/);
+
+  // Return the number of words
+  return words.length;
 }
