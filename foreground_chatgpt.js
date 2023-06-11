@@ -23,7 +23,7 @@ lastMessage.onAfterSet = function(newVal){
   // check conversation on/off
   isReadyForConversation(newVal)
 
-  if(isConversationOn) {
+  if(isConversationOn.getValue()) {
     console.log(newVal)
     // forward message to BARD
     //sendMessage("toBard", newVal);
@@ -68,8 +68,6 @@ function chatObserver(){
         // Check if the message has the "markdown" class
         const newChildMarkdown = newChild?.getElementsByClassName("markdown");
         if(!isElementValid(newChildMarkdown[0]).html().check) return;
-        // Assign the textarea and send button elements
-        textAreaPromptField = document.getElementById('prompt-textarea');
         const isStreamDone = setInterval(()=>{
           // Check if the message is still being streamed (incomplete)
           if(newChildMarkdown[0].classList.contains('result-streaming')) return;
@@ -142,20 +140,20 @@ function setupConversationHandler(message) {
 }
 
 // =======================
-// isReady sign check (🔥)
+// isReady sign check(<<..>>)
 // =======================
 function isReadyForConversation(message){
   // Define the regex pattern to check
-  const startSentance = "Let’s Quick Of This 🔥";
-  const endSentance = "It was very nice to talk to you 🔥";
+  const startSentance = "<<Let’s Quick Of This>>";
+  const endSentance = "<<It was very nice to talk to you>>";
 
   if (message.includes(startSentance)) {
     isConversationOn.setValue(true);
-    console.log("The target sentence is found in the last message", isConversationOn);
+    console.log("The target sentence is found in the last message", isConversationOn.getValue());
   }
   if (message.includes(endSentance)) {
     isConversationOn.setValue(false);
-    console.log("The target sentence is found in the last message", isConversationOn);
+    console.log("The target sentence is found in the last message", isConversationOn.getValue());
   }
 }
 
@@ -165,16 +163,18 @@ function isReadyForConversation(message){
 
 // Function to send a prompt to the chat input field
 function sendPrompt(content){
+  // Assign the textarea and send button elements
+  textAreaPromptField = document.getElementById('prompt-textarea');
   sendPromptBtn = document.querySelector('.absolute.p-1.rounded-md.md\\:bottom-3.md\\:p-2.md\\:right-3.dark\\:hover\\:bg-gray-900.dark\\:disabled\\:hover\\:bg-transparent.right-2.disabled\\:text-gray-400.enabled\\:bg-brand-purple.text-white.bottom-1\\.5.transition-colors.disabled\\:opacity-40');
   emulatePaste(textAreaPromptField, content)
   sendPromptBtn.click();
+  console.log('setup sent successfuly..')
 }
 
 // Function to emulate a paste operation into a textarea
 function emulatePaste(textarea, content) {
   // Set the selection range at the end of the textarea's content
   // FIX textarea
-  console.log(textarea)
   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   // Insert the content at the current cursor position
   document.execCommand('insertText', false, content);

@@ -23,7 +23,7 @@ lastMessage.onAfterSet = function(newVal){
   // check conversation on/off
   isReadyForConversation(newVal)
 
-  if(isConversationOn) {
+  if(isConversationOn.getValue()) {
     console.log(newVal)
     // forward message to chatgpt
     //sendMessage("toChatGPT", newVal);
@@ -62,9 +62,6 @@ function chatObserver(){
         // Check if the newChild is a valid response with content
         if(newChild.childNodes.length != 3) return;
         setTimeout(()=>{
-          // Assign the textarea and send button elements
-          textAreaPromptField = document.getElementsByTagName('textarea')[0];
-          sendPromptBtn = document.getElementsByClassName("send-button-container")[0].getElementsByTagName('button')[0];
           // Get the last response markdown
           chatResponse = newChild.querySelector('.presented-response-container').getElementsByClassName('markdown');
           lastMessage.setValue(chatResponse[chatResponse.length-1].textContent)
@@ -128,44 +125,45 @@ function setupConversationHandler(message) {
   const topic = "Topic: " + receivedMessage.topic + "\n\n" || "Topic: Any Random Topic in ai and Web developement Field \n\n";
   const commonRules = rules[0];
   const roleRules = rules[1];
-  console.log(`${topic} \n ${commonRules} \n ${roleRules}`)
   // prompt it
   sendPrompt(`${topic} \n ${commonRules} \n ${roleRules}`)
+  console.log(`${topic} \n ${commonRules} \n ${roleRules}`)
 }
 
 // =======================
-// isReady sign check (🔥)
+// isReady sign check(<<..>>)
 // =======================
 function isReadyForConversation(message){
   // Define the regex pattern to check
-  const startSentance = "Let’s Quick Of This 🔥";
-  const endSentance = "It was very nice to talk to you 🔥";
+  const startSentance = "<<Let’s Quick Of This>>";
+  const endSentance = "<<It was very nice to talk to you>>";
 
   if (message.includes(startSentance)) {
     isConversationOn.setValue(true);
-    console.log("The target sentence is found in the last message", isConversationOn);
+    console.log("The target sentence is found in the last message", isConversationOn.setValue());
   }
   if (message.includes(endSentance)) {
     isConversationOn.setValue(false);
-    console.log("The target sentence is found in the last message", isConversationOn);
+    console.log("The target sentence is found in the last message", isConversationOn.getValue());
   }
 }
 
 // =======================
 //      SEND PROMPT
 // =======================
-
 // Function to send a prompt to the chat input field
 function sendPrompt(content){
+  // Assign the textarea and send button elements
+  textAreaPromptField = document.getElementsByTagName('textarea')[0];
+  sendPromptBtn = document.getElementsByClassName("send-button-container")[0].getElementsByTagName('button')[0];
   emulatePaste(textAreaPromptField, content)
-  console.log(textAreaPromptField)
   sendPromptBtn.click();
+  console.log('setup sent successfuly..')
 }
 
 // Function to emulate a paste operation into a textarea
 function emulatePaste(textarea, content) {
   // FIX textarea
-  console.log(textarea)
   // Set the selection range at the end of the textarea's content
   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   // Insert the content at the current cursor position

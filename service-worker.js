@@ -74,7 +74,7 @@ function handleIncomingMessage(message, sender, sendResponse) {
         console.log(startFirst)
         sendMessageToTab(tabID[startFirst], {
           action: "startFirst",
-          payload: "you start first 🔥"
+          payload: "<<you start first>>"
         })
       }
       break;
