@@ -135,16 +135,16 @@ function setupConversationHandler(message) {
 // =======================
 function isReadyForConversation(message){
   // Define the regex pattern to check
-  const startSentance = "<<Let’s Quick Of This>>";
-  const endSentance = "<<It was very nice to talk to you>>";
+  const startSentance = "mediator link me please";
+  const endSentance = "mediator cut the link please";
 
   if (message.includes(startSentance)) {
     isConversationOn.setValue(true);
-    console.log("The target sentence is found in the last message", isConversationOn.setValue());
+    console.log("The startSentance is found in the last message", isConversationOn.getValue());
   }
   if (message.includes(endSentance)) {
     isConversationOn.setValue(false);
-    console.log("The target sentence is found in the last message", isConversationOn.getValue());
+    console.log("The endSentance is found in the last message", isConversationOn.getValue());
   }
 }
 
