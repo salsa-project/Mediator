@@ -72,10 +72,16 @@ function handleIncomingMessage(message, sender, sendResponse) {
         let toss = tossCoin();
         let startFirst = toss === 1 ? "chatgpt" : "bard";
         console.log(startFirst)
-        sendMessageToTab(tabID[startFirst], {
-          action: "startFirst",
-          payload: "you are choosed by mediator"
-        })
+        let result = {
+          action: "whoStartFirst",
+          payload: {
+            engager: startFirst,
+            prompt: "You've been chosen by the mediator",
+          }
+        }
+        //TODO: change it to dynamic
+        sendMessageToTab(tabID.chatgpt, result)
+        sendMessageToTab(tabID.bard, result)
       }
       break;
     // from foreground_chatgpt.js

@@ -7,11 +7,13 @@ let chatBody = null;
 let textAreaPromptField = null;
 let sendPromptBtn = null;
 
-let isConversationOn = new ValueWatcher(false);
+let isReady = new ValueWatcher(false);
+let isConversationOn = false;
 let lastMessage = new ValueWatcher('');
 
-isConversationOn.onAfterSet= function(newVal){
+isReady.onAfterSet= function(newVal){
   if(newVal){
+    console.log('bard is ready..')
     chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "bard", isReady: true}});
   }else{
     chrome.runtime.sendMessage({action: "readyForConversation", payload: {name: "bard", isReady: false}});
@@ -20,16 +22,18 @@ isConversationOn.onAfterSet= function(newVal){
 
 // Define a callback function to be executed after the value of `lastMessage` is set
 lastMessage.onAfterSet = function(newVal){
+  console.log('New Message Is Stored..')
   // check conversation on/off
   isReadyForConversation(newVal)
-
-  if(isConversationOn.getValue()) {
-    console.log(newVal)
-    // forward message to chatgpt
-    //sendMessage("toChatGPT", newVal);
+  console.log("isReady: "+isReady.getValue()+"isConversationOn: "+isConversationOn)
+  if(isConversationOn) {
+    console.log('Sending To Bard....');
+    // forward message to BARD
+    sendMessage("toChatGPT", newVal);
   }
   
 }
+
 // =======================
 //       CHAT BODY
 //   CONTAINER DETECTOR
@@ -104,9 +108,12 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       console.log(message.payload.message);
     break;
 
-    case "startFirst":
-      sendPrompt(message.payload);
-      console.log(message.payload);
+    case "whoStartFirst":
+      isConversationOn = true;
+      if(message.payload.engager === "bard"){
+      sendPrompt(message.payload.prompt);
+      console.log("Chatgpt will engage first", message.payload);
+      }
       break;
 
     default: console.log("Something Went Wrong...........")
@@ -127,7 +134,6 @@ function setupConversationHandler(message) {
   const roleRules = rules[1];
   // prompt it
   sendPrompt(`${topic} \n ${commonRules} \n ${roleRules}`)
-  console.log(`${topic} \n ${commonRules} \n ${roleRules}`)
 }
 
 // =======================
@@ -135,16 +141,15 @@ function setupConversationHandler(message) {
 // =======================
 function isReadyForConversation(message){
   // Define the regex pattern to check
-  const startSentance = "mediator link me please";
-  const endSentance = "mediator cut the link please";
-
+  const startSentance = "3652126526322";
+  const endSentance = "3652000026322";
   if (message.includes(startSentance)) {
-    isConversationOn.setValue(true);
-    console.log("The startSentance is found in the last message", isConversationOn.getValue());
+    isReady.setValue(true);
+    console.log("The startSentance is found in the last message", isReady.getValue());
   }
   if (message.includes(endSentance)) {
-    isConversationOn.setValue(false);
-    console.log("The endSentance is found in the last message", isConversationOn.getValue());
+    isReady.setValue(false);
+    console.log("The endSentance is found in the last message", isReady.getValue());
   }
 }
 
@@ -158,7 +163,6 @@ function sendPrompt(content){
   sendPromptBtn = document.getElementsByClassName("send-button-container")[0].getElementsByTagName('button')[0];
   emulatePaste(textAreaPromptField, content)
   sendPromptBtn.click();
-  console.log('setup sent successfuly..')
 }
 
 // Function to emulate a paste operation into a textarea
