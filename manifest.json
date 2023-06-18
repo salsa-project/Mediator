@@ -17,7 +17,8 @@
         "declarativeContent", 
         "activeTab", 
         "scripting", 
-        "tabs"
+        "tabs",
+        "downloads"
     ],
     "host_permissions": [
         "https://chat.openai.com/*",
@@ -34,6 +35,10 @@
         {
           "matches": ["https://bard.google.com/*"],
           "js": ["foreground_bard.js"]
+        },
+        {
+          "matches": ["https://www.bing.com/images/create*"],
+          "js": ["foreground_dall_e.js"]
         }
   ]
 }

@@ -3,7 +3,8 @@
 // Constants for tab URLs
 const urlPatterns = {
   chatgpt: "https://chat.openai.com/",
-  bard: "https://bard.google.com/"
+  bard: "https://bard.google.com/",
+  dall_e: "https://www.bing.com/images/create"
 }
 
 // store the tab IDs
@@ -104,6 +105,19 @@ function handleIncomingMessage(message, sender, sendResponse) {
           message: message.payload.lastMessage,
         },
       });
+      break;
+
+    case "downloadPicDall_e":
+      // Access the file details received from the content script
+      const filename = message.payload.filename;
+      const url = message.payload.url;
+      const folderName = message.payload.folderName;
+
+      chrome.downloads.download({
+        url: url,
+        filename: folderName + filename,
+        saveAs: false
+      })
       break;
 
     default:

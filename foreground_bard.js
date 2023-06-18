@@ -44,14 +44,16 @@ function bodyObserver(){
   const observer = new MutationObserver((mutationsList, observer) => {
     chatBody = document.querySelector('[data-test-id="chat-history-container"]');
     // Check if the chat body container is found and valid
-    if(isElementValid(chatBody).html().check) {
+    if(isElementValid(chatBody, 'html')) {
       observer.disconnect();
       chatObserver(); // Call the chatObserver function
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
-bodyObserver();
+
+/*** DESIABLED ***/
+//bodyObserver();
 
 // =======================
 //   New Message Detector
@@ -182,68 +184,108 @@ function emulatePaste(textarea, content) {
 function isElementValid(element, expectedNature, checkArrayElements = false) {
   const validator = {
     check: false,
-    message: '',
+    logEnabled: true,
+    log(message, element) {
+      if (this.logEnabled) {
+        console.log(message, element);
+      }
+    },
     array() {
       this.check = Array.isArray(element);
-      this.message = 'Element is an array';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is an array:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     undefined() {
       this.check = typeof element === 'undefined';
-      this.message = 'Element is undefined';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is undefined:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     null() {
       this.check = element === null;
-      this.message = 'Element is null';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is null:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     string() {
       this.check = typeof element === 'string';
-      this.message ='Element is a string';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is a string:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     number() {
       this.check = typeof element === 'number';
-      this.message = 'Element is a number';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is a number:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     object() {
       this.check = typeof element === 'object' && element !== null;
-      this.message = 'Element is an object';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is an object:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     boolean() {
       this.check = typeof element === 'boolean';
-      this.message = 'Element is a boolean';
-      return this;
+      if (this.logEnabled) {
+        this.log('Element is a boolean:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
     },
     html() {
       this.check = element instanceof HTMLElement;
-      this.message = 'HTML element';
-      return this;
+      if (this.logEnabled) {
+        this.log('HTML element:', element);
+        this.log('Result:', this.check);
+      }
+      return this.check;
+    },
+    checkArrayElements() {
+      if (checkArrayElements && Array.isArray(element)) {
+        for (const item of element) {
+          if (item === undefined || item === null) {
+            this.check = true;
+            if (this.logEnabled) {
+              this.log('Element contains undefined or null values:', element);
+              this.log('Result:', this.check);
+            }
+            break;
+          }
+        }
+      }
+      return this.check;
+    },
+    checkExpectedNature() {
+      if (expectedNature && typeof this[expectedNature] === 'function') {
+        this[expectedNature]();
+      } else {
+        if (this.logEnabled) {
+          this.log('Unexpected nature');
+        }
+      }
+      return this.check;
     },
   };
 
-  if (checkArrayElements && Array.isArray(element)) {
-    for (const item of element) {
-      if (item === undefined || item === null) {
-        validator.check = true;
-        validator.message = 'Element contains undefined or null values';
-        return validator;
-      }
-    }
-    validator.check = false;
-    validator.message = 'All elements are defined and non-null';
-    return validator;
+  if (checkArrayElements) {
+    return validator.checkArrayElements();
+  } else {
+    return validator.checkExpectedNature();
   }
-
-  if (expectedNature && typeof validator[expectedNature] === 'function') {
-    return validator[expectedNature]();
-  }
-
-  validator.message = 'Unexpected nature';
-  return validator;
 }
 
 // =======================
