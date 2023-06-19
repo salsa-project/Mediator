@@ -1,9 +1,14 @@
+/*===== GLOBAL PARAMS =====*/
+let folderName = null;
+let tokenSettings = null;
+let promptsList = [];
+
+/*===== VARIABLES =====*/
 let formContainer = null;
 let inputBox = null;
 let sendPromptBtn = null;
 let supriseMeBtn = null;
 let tokenBalance = null;
-
 let genWrappersContainer = null;
 
 let isReadyForGen = new ValueWatcher(false);
@@ -14,9 +19,10 @@ const processedImageURLs = new Set();
 isReadyForGen.onAfterSet = function(newVal){
   if(newVal){
     // send the prompt
-    sendPrompt("old 1950s tools on a light purple background, retro futurism")
+    sendPrompt(chooseRandomValue(readyPrompts))
     // set isReadyForGen to true
     isReadyForGen.setValue(false)
+
     // check if is still generating
     const isGenerating = setInterval(()=>{
       // get pictures container
@@ -49,7 +55,7 @@ isPicsLoaded.onAfterSet = function(newVal){
     let rescaledLink = removeDimensionLimit(link);
 
     // === DOWNLOAD PICTURE ===
-    downloadPicture(rescaledLink)
+    downloadPicture(rescaledLink, folderName)
   });
   // WE CAN GENERATE AGAIN
   if(Number(tokenBalance.textContent) > 10) isReadyForGen.setValue(true);
@@ -263,7 +269,7 @@ function ValueWatcher(value) {
 // =======================
 //     count Words
 // =======================
-// for chatgpt3 max length is: 700~800 words
+// for bing_dall-e max length is: ~70 words
 function countWords(text) {
   // Remove leading and trailing whitespaces
   text = text.trim();
@@ -273,4 +279,131 @@ function countWords(text) {
 
   // Return the number of words
   return words.length;
+}
+
+/****************************
+Adjective (Fuzzy) + Noun (creature) + Verb(wearing glasses) + Style (digital art)
+Adjective (e.g., Fuzzy)
+Noun (e.g., creature)
+Verb (e.g., wearing glasses)
+Style (e.g., digital art)
+******************************/
+// =======================
+//     PROMPT GENERATOR
+// =======================
+// Arrays of adjectives, nouns, verbs, and art styles
+const adjectives = [
+  'fuzzy', 'cute', 'glamorous', 'realistic', 'minimalistic', 'colorful',
+  'abstract', 'whimsical', 'vibrant', 'dreamy', 'mystical', 'playful',
+  'elegant', 'quirky', 'fantastical', 'serene', 'surreal', 'ethereal',
+  'dynamic', 'bold', 'tranquil', 'magical', 'nostalgic', 'impressionistic',
+  'innovative', 'sophisticated', 'expressive', 'mesmerizing', 'harmonious',
+  'intricate', 'thought-provoking', 'captivating', 'energetic', 'fluid',
+  'enchanting', 'mysterious', 'contemplative', 'stunning', 'evocative'
+  // Add more adjectives...
+];
+const nouns = [
+  'guitar', 'polar bear', 'logo', 'character', 'robot', 'car',
+  'flower', 'landscape', 'cityscape', 'portrait', 'animal', 'nature',
+  'building', 'tree', 'vehicle', 'creature', 'instrument', 'scene',
+  'device', 'artwork', 'person', 'illustration', 'object', 'symbol',
+  'abstraction', 'architecture', 'animation', 'still life', 'concept',
+  'fantasy', 'mythology', 'artifact', 'structure', 'creation', 'figure',
+  'design', 'visual', 'composition', 'installation', 'picture', 'sculpture'
+  // Add more nouns...
+];
+const verbs = [
+  'wearing glasses', 'product design', 'featuring a skyline', 'with glamorous outfit', 'holding an umbrella in the rain',
+  'playing music', 'floating in space', 'emerging from darkness', 'dancing with light', 'interacting with nature',
+  'exploring the unknown', 'transforming into something else', 'creating harmony', 'breaking boundaries', 'conveying emotions',
+  'revealing hidden meanings', 'evoking nostalgia', 'confronting reality', 'defying gravity', 'inspiring imagination',
+  'expressing individuality', 'celebrating diversity', 'unleashing creativity', 'capturing fleeting moments', 'embracing serendipity',
+  'symbolizing strength', 'provoking thoughts', 'reflecting culture', 'telling a story', 'evoking wonder'
+  // Add more verbs...
+];
+const artStyles = [
+  'digital art', '3D render', 'graphic design', 'ink drawing', 'photo visual',
+  'mixed media', 'watercolor painting', 'oil painting', 'collage', 'abstract expressionism',
+  'pop art', 'minimalism', 'surrealism', 'impressionism', 'cubism',
+  'realism', 'fantasy art', 'street art', 'concept art', 'illustration',
+  'contemporary art', 'photorealism', 'symbolism', 'modernism', 'post-impressionism',
+  'dadaism', 'pointillism', 'neo-expressionism', 'fauvism', 'romanticism',
+  'naïve art', 'installation art', 'hyperrealism', 'deconstructivism', 'suprematism',
+  'constructivism', 'traditional art', 'folk art', 'graffiti art', 'kinetic art'
+  // Add more art styles...
+];
+
+// Function to generate a prompt
+function generatePrompt() {
+  // Randomly select an adjective, noun, verb, and art style
+  const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+  const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
+  const randomStyle = artStyles[Math.floor(Math.random() * artStyles.length)];
+
+  // Generate the prompt using the selected words
+  const prompt = `${randomAdjective} ${randomNoun}, ${randomVerb}, ${randomStyle}`;
+
+  return prompt;
+}
+
+// =======================
+//     READY PROMPTS
+// =======================
+
+const readyPrompts = [
+  "Radiant robotic being sporting a crimson shirt, portrayed in the style of pixel art.",
+  "Sparkling mechanical creature outfitted in a scarlet tee, depicted using pixel art techniques.",
+  "Glittering android garbed in a crimson top, showcased in the form of pixelated art.",
+  "Polished robotic entity wearing a red shirt, visualized through the medium of pixel art.",
+  "Shiny automaton donning a crimson top, portrayed in the medium of pixelated artwork.",
+  "Glinting machine adorned in a red tee, presented through the lens of pixel art techniques.",
+  "Bright metallic being outfitted in a scarlet shirt, depicted in the style of pixel artistry.",
+  "Lustrous cyborg adorned in a red shirt, presented in pixel art format.",
+  "Sleek, sports car, speeding down the highway, CGI render.",
+  "Elaborate, steampunk machinery, showcasing intricate gears and cogs, 3D render.",
+  "Art Deco-inspired, furniture design, showcasing elegance, 3D visualization.",
+  "Abstract, colorful pattern, illuminated in black light, vector design.",
+  "Cyberpunk, neon-lit alleyway, bustling with people, matte painting.",
+  "Post-apocalyptic, world, littered with ruins, concept art.",
+  "Whimsical, hot air balloon ride, soaring above clouds, digital art.",
+  "Colorful, street art, adorning urban walls, street photography.",
+  "Satirical, cartoon, poking fun at politics, hand-drawn illustration.",
+  "Dreamy, cosmos, swirling with galaxies, space art.",
+  "Modern, geometric animal design, vector illustration.",
+  "Abstract, colorful pattern, illuminated in black light, vector design.",
+  "Cyberpunk, neon-lit alleyway, bustling with people, matte painting.",
+  "Post-apocalyptic, world, littered with ruins, concept art.",
+  "Whimsical, hot air balloon ride, soaring above clouds, digital art.",
+  "Colorful, street art, adorning urban walls, street photography.",
+  "Satirical, cartoon, poking fun at politics, hand-drawn illustration.",
+  "Dreamy, cosmos, swirling with galaxies, space art.",
+  "Modern, geometric animal design, vector illustration.",
+  "Majestic, waterfall, surrounded by lush forest, landscape photography.",
+  "Minimalist, modern architecture, featuring clean lines, 3D render.",
+  "Abstract, colorful pattern, illuminated in black light, vector design.",
+  "Futuristic, space shuttle, blasting off into the stars, concept art.",
+  "Detailed, world atlas, highlighting cultural landmarks, educational illustration.",
+  "Spooky, abandoned asylum, with peeling wallpaper and rusted metal, urban exploration photography.",
+  "Vibrant, African savanna, with grazing wildlife and acacia trees, nature photography.",
+  "Powerful, political campaign poster, featuring bold typography and a patriotic color scheme.",
+  "Mysterious, ancient ruins, with overgrown vegetation, concept art.",
+  "Charming, countryside barn, with grazing farm animals, acrylic painting.",
+  "Modern, minimalistic architecture, with clean lines and geometric shapes, 3D render.",
+  "Moody, rainy cityscape, with glowing streetlights and reflections, digital art.",
+  "Majestic, medieval castle, perched on a hilltop, oil painting.",
+  "Otherworldly, underwater city, with intricate architecture and sea creatures, concept art.",
+  "Vibrant, mixed media art piece, featuring collaged images, paint, and typography.",
+  "Abstract, experimental sculpture, exploring form and texture, mixed media.",
+  "Enchanting, fairy tale illustration, depicting a magical forest and mythical creatures.",
+  "Realistic, still life painting, capturing everyday objects in intricate detail.",
+  "Epic, fantasy landscape, with towering mountains and mystical creatures, digital painting.",
+  "Minimalist, black and white portrait, showcasing strong emotion, charcoal drawing.",
+  "Whimsical, children's book illustration, featuring talking animals and vibrant colors.",
+  "Surreal, dreamlike composition, blending unexpected elements, digital collage.",
+  "Dramatic, high-fashion photography, highlighting unique styling and bold makeup.",
+];
+
+function chooseRandomValue(readyPrompts) {
+  return readyPrompts[Math.floor(Math.random() * readyPrompts.length)];
 }
