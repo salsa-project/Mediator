@@ -19,7 +19,7 @@ const processedImageURLs = new Set();
 isReadyForGen.onAfterSet = function(newVal){
   if(newVal){
     // send the prompt
-    sendPrompt(chooseRandomValue(readyPrompts))
+    sendPrompt(generatePrompt())
     // set isReadyForGen to true
     isReadyForGen.setValue(false)
 
@@ -58,7 +58,7 @@ isPicsLoaded.onAfterSet = function(newVal){
     downloadPicture(rescaledLink, folderName)
   });
   // WE CAN GENERATE AGAIN
-  if(Number(tokenBalance.textContent) > 10) isReadyForGen.setValue(true);
+  if(Number(tokenBalance.textContent) > 0) isReadyForGen.setValue(true);
 }
 
 // =======================
@@ -302,16 +302,12 @@ const adjectives = [
   'enchanting', 'mysterious', 'contemplative', 'stunning', 'evocative'
   // Add more adjectives...
 ];
-const nouns = [
-  'guitar', 'polar bear', 'logo', 'character', 'robot', 'car',
-  'flower', 'landscape', 'cityscape', 'portrait', 'animal', 'nature',
-  'building', 'tree', 'vehicle', 'creature', 'instrument', 'scene',
-  'device', 'artwork', 'person', 'illustration', 'object', 'symbol',
-  'abstraction', 'architecture', 'animation', 'still life', 'concept',
-  'fantasy', 'mythology', 'artifact', 'structure', 'creation', 'figure',
-  'design', 'visual', 'composition', 'installation', 'picture', 'sculpture'
-  // Add more nouns...
-];
+let category1 = ["Chair", "Table", "Lamp", "Couch", "Bookshelf", "Desk", "Bed", "Wardrobe", "Mirror", "Rug", "Clock", "Shelf", "Dresser", "Sofa", "TV Stand", "Nightstand", "Ottoman", "Cabinet", "Bench", "Credenza", "Stool", "Futon", "Console Table", "Rocking Chair", "Bean Bag", "Chaise Lounge", "Armchair", "Side Table", "Dining Table", "End Table", "Vanity", "Hammock", "Footstool", "Room Divider", "Writing Desk", "Coat Rack", "Baby Crib", "Bar Stool", "Magazine Rack", "Folding Chair", "Step Stool", "Computer Desk", "High Chair", "Card Table", "Piano Bench", "Plant Stand", "Wall Shelf", "Storage Bench", "Bean Bag Chair", "Massage Chair", "Chaise Lounge Chair", "Corner Shelf"];
+let category2 =["Car", "Bicycle", "Motorcycle", "Bus", "Truck", "Train", "Boat", "Airplane", "Scooter", "Helicopter", "Van", "RV", "Taxi", "Golf Cart", "Segway", "Forklift", "Skateboard", "Wheelchair", "Sled", "Go-Kart", "Jet Ski", "Snowmobile", "Cruise Ship", "Submarine", "Tractor", "Hot Air Balloon", "Bulldozer", "Race Car", "Ambulance", "Fire Truck", "Police Car", "Garbage Truck", "Ice Cream Truck", "Tow Truck", "Dump Truck", "Food Truck", "Mail Truck", "Tanker Truck", "Delivery Van", "Limousine", "Electric Scooter", "Motorized Bicycle", "Segway", "Amphibious Vehicle", "Monster Truck", "Trolley", "Bumper Car", "Cable Car", "Camper Van", "Double Decker Bus", "Golf Cart", "Horse-Drawn Carriage", "Ice Cream Truck", "Jeep"];
+let category3 =["Apple", "Orange", "Banana", "Grapes", "Watermelon", "Strawberry", "Pineapple", "Mango", "Kiwi", "Pear", "Lemon", "Cherry", "Blueberry", "Peach", "Raspberry", "Blackberry", "Coconut", "Avocado", "Pomegranate", "Plum", "Cantaloupe", "Lime", "Grapefruit", "Cranberry", "Apricot", "Nectarine", "Passion Fruit", "Fig", "Honeydew", "Tangerine", "Mandarin Orange", "Lychee", "Guava", "Persimmon", "Date", "Dragon Fruit", "Papaya", "Star Fruit", "Mulberry", "Boysenberry", "Elderberry", "Kiwi Berry", "Clementine", "Plantain", "Kumquat", "Quince", "Soursop", "Cherimoya", "Feijoa", "Ackee", "Durian"];
+let category4 =["Television", "Computer", "Phone", "Headphones", "Speaker", "Tablet", "Smartwatch", "Camera", "Printer", "Router", "Keyboard", "Mouse", "Laptop", "Monitor", "Projector", "Microphone", "Gaming Console", "External Hard Drive", "USB Flash Drive", "Scanner", "Fitness Tracker", "Bluetooth Earphones", "Wireless Charger", "VR Headset", "Webcam", "Wireless Mouse", "Wireless Keyboard", "Smart Home Hub", "Drone", "Portable Charger", "Graphic Tablet", "E-book Reader", "Smart Thermostat", "Smart Speaker", "Wireless Earbuds", "Noise Cancelling Headphones", "Smart TV", "Wireless Router", "Smart Light Bulb", "Bluetooth Speaker", "Smart Lock", "Smart Plug", "Smart Doorbell", "Wireless Headset", "Touchscreen Monitor", "Smart Scale", "GPS Navigation System", "Streaming Device", "Action Camera", "Digital Photo Frame", "Gaming Mouse"]
+const nouns = ["rpg map","apple", "book", "car", "desk", "earphones", "flower", "guitar", "hat", "ice cream", "jigsaw puzzle", "keyboard", "lamp", "moon", "notebook", "orange", "pencil", "quilt", "radio", "shoes", "table", "umbrella", "violin", "watch", "xylophone", "yacht", "zeppelin", "airplane", "bicycle", "camera", "door", "earrings", "fan", "globe", "hammer", "island", "kite", "laptop", "map", "newspaper", "ocean", "paintbrush", "quill", "rug", "sunglasses", "teapot", "vase", "wallet", "yarn", "acoustic guitar", "basketball", "chair", "drums", "fountain pen", "glasses", "hamburger", "internet", "microphone", "note", "painting", "robot", "sailboat", "ukulele", "water bottle", "zipper", "air conditioner", "bag", "desktop", "earbuds", "flashlight", "hanger", "microscope", "saxophone", "alarm clock", "balloon", "candle", "dictionary", "easel", "fishing rod", "hair dryer", "inflatable boat", "juice carton", "kettle", "luggage", "necktie", "quilting frame", "rolling pin", "speaker", "tent", "watering can", "yoyo", "air freshener", "candy", "dice", "eraser", "football", "iron", "jump rope", "keychain", "origami", "photo frame", "screwdriver", "tape measure", "whistle", "air pump", "bagel", "candlestick", "disk", "ironing board", "jigsaw", "lampshade", "magnifying glass", "nail", "quill pen", "rubber band", "scissors", "telescope", "velvet", "candy cane", "disposable cup", "football helmet", "helmet", "ink bottle", "neck pillow", "paint roller", "quilting hoop", "rubber duck", "tissue box", "yo-yo", "aluminum foil", "ballpoint pen", "candy wrapper", "dog leash", "eyeglass case", "flip-flops", "gift box", "hairbrush", "inflatable mattress", "juicer", "knee pads", "mouse pad", "origami paper", "paper clip", "quilted jacket", "roller skates", "screw", "toothbrush", "aluminum can", "camera tripod", "dog toy", "eyeglasses", "flip phone", "gloves", "hairdryer", "inflatable pool", "juice box", "mouse", "necklace", "paperweight", "quilted vest", "sculpture", "toothpaste", "USB drive", "backpack", "dog treat", "flash drive", "goggles", "hairpin", "inflatable raft", "jewelry box", "kitchen timer", "remote control", "stapler", "toothpick", "USB cable", "camera lens", "doll", "golf ball", "hair spray", "inflatable toy", "rubber ball", "dollhouse", "golf club", "jack-o'-lantern", "plastic bottle", "door handle", "golf tee", "plastic cup", "doorbell", "plastic fork", "ball", "key"]
+
 const verbs = [
   'wearing glasses', 'product design', 'featuring a skyline', 'with glamorous outfit', 'holding an umbrella in the rain',
   'playing music', 'floating in space', 'emerging from darkness', 'dancing with light', 'interacting with nature',
@@ -319,7 +315,6 @@ const verbs = [
   'revealing hidden meanings', 'evoking nostalgia', 'confronting reality', 'defying gravity', 'inspiring imagination',
   'expressing individuality', 'celebrating diversity', 'unleashing creativity', 'capturing fleeting moments', 'embracing serendipity',
   'symbolizing strength', 'provoking thoughts', 'reflecting culture', 'telling a story', 'evoking wonder'
-  // Add more verbs...
 ];
 const artStyles = [
   'digital art', '3D render', 'graphic design', 'ink drawing', 'photo visual',
@@ -329,8 +324,7 @@ const artStyles = [
   'contemporary art', 'photorealism', 'symbolism', 'modernism', 'post-impressionism',
   'dadaism', 'pointillism', 'neo-expressionism', 'fauvism', 'romanticism',
   'naïve art', 'installation art', 'hyperrealism', 'deconstructivism', 'suprematism',
-  'constructivism', 'traditional art', 'folk art', 'graffiti art', 'kinetic art'
-  // Add more art styles...
+  'constructivism', 'traditional art', 'folk art', 'graffiti art', 'kinetic art', 'isometric view'
 ];
 
 // Function to generate a prompt
